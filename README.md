@@ -1,13 +1,54 @@
-# Sample Hardhat Project
+# Comprehensive Blockchain Wallet Locking System Project Specification
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+This project is Staking management system on EVM.
+Token is ERC-20 standard.
 
 Try running some of the following tasks:
 
+### project install
+
 ```shell
-npx hardhat help
+npm install
+```
+### project compile
+
+```shell
+npx hardhat compile
+```
+The result will be
+```shell
+Generating typings for: 42 artifacts in dir: typechain-types for target: ethers-v6
+Successfully generated 126 typings!
+Compiled 40 Solidity files successfully (evm target: paris).
+```
+### project test
+
+```shell
 npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.ts
+```
+
+The result will be 
+
+```shell
+TokenFactory
+    Wallet Factory
+      ✔ should create token (659ms)
+      ✔ Should set user1 as admin
+      ✔ Should not set admin if caller is not admin
+      ✔ Owner verification
+    Token Locking Contract
+      ✔ Should Token Lock in smart contract with user1
+      ✔ Should not withdraw in 3 months with user1
+      ✔ Should withdraw after 3 month with user1
+      ✔ Should Token Lock in smart contract with user2
+      ✔ Should not withdraw in 3 months with user2
+      ✔ Should withdraw after 3 month with user2
+    RewardDistribution Contract
+      ✔ Should withdraw after 3 month with reward with user1
+      ✔ Should not withdraw in 3 months with Reward with user1
+      ✔ Should withdraw after 3 month with reward with user2
+      ✔ Should not withdraw in 3 months with Reward with user2
+
+
+  14 passing (860ms)
 ```
