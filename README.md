@@ -5,6 +5,14 @@ Token is ERC-20 standard.
 
 Try running some of the following tasks:
 
+### Environment value setting in .env file
+```shell
+PRIVATE_KEY=your_private_key
+ETHERSCAN_API_KEY=your_network_api
+```
+
+
+
 ### project install
 
 ```shell
