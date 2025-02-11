@@ -20,12 +20,12 @@ contract StakingContract {
     constructor(address _admin){
         admin = _admin;
     }
-
+//Set Admin
     function setAdmin(address _admin) public {
         require(admin == msg.sender, "caller is not admin");
         admin = _admin;
     }
-
+//Deposite token in smart contract
     function Deposite(
         address stakingToken,
         uint256 amount
@@ -37,6 +37,8 @@ contract StakingContract {
         IToken stakingTokenInterface = IToken(stakingToken);
         stakingTokenInterface.transferFrom(msg.sender, address(this), amount);
     }
+
+//Smart contract will withdraw asset with reward
 
     function WithDraw(
         uint8 index,
@@ -59,6 +61,7 @@ contract StakingContract {
         delete stakingTokenStartTime[msg.sender][index];
     }
 
+//Smart contract will deposite again after getting reward.
     function ReDeposite(
         uint8 index,
         address stakingToken
@@ -80,16 +83,18 @@ contract StakingContract {
     }
 
 
-
+//Get Staking Token List from Smart contract in client
     function getStakingTokenList(
     ) public view returns (address[] memory) {
         return stakingTokenList[msg.sender];
     }
 
+//Get Staking Token Amount of users in client
     function getStakingTokenAmount() public view returns (uint256[] memory){
         return stakingTokenAmount[msg.sender];
     }
 
+//Get Staking Token StartTime of deposite in client
     function getStakingTokenStartTime() public view returns (uint256[] memory){
         return stakingTokenStartTime[msg.sender];
     }
@@ -109,6 +114,8 @@ contract StakingContract {
         return address(uint160(uint(hash)));
     }
 
+//Deploy token to target address 
+
     function deploy(bytes memory bytecode, uint salt) public returns (address) {
         address addr;
         assembly {
@@ -120,13 +127,6 @@ contract StakingContract {
 
         return addr;
     }
-
-    function getStartupTokens(
-        uint8 _startupId
-    ) public view returns (address[] memory) {
-        return startupTokenList[_startupId];
-    }
-
 
     function getBytecode(
         string memory name,

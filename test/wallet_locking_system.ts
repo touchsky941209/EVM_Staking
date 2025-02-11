@@ -3,7 +3,9 @@ import { expect } from "chai";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { Token } from "../typechain-types";
 
-describe("TokenFactory", function () {
+
+//wallet_locking_system
+describe("wallet_locking_system", function () {
     async function deployFixture() {
         const [admin, user1, user2] = await ethers.getSigners();
         const ERC20Test = await ethers.getContractFactory("Token");
@@ -27,7 +29,10 @@ describe("TokenFactory", function () {
         }
     }
 
+
+    //Wallet Factory Performance Test
     describe("Wallet Factory", async () => {
+        // For testing, generate usdt and usdc tokens using decimal 6.
         it("should create token", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             expect(await ethers.formatUnits(await USDT.balanceOf(user1), 6)).to.equal("100000.0");
@@ -37,16 +42,18 @@ describe("TokenFactory", function () {
             expect(await ethers.formatUnits(await USDT.balanceOf(user1), 6)).to.equal("99900.0");
         })
 
+        //Only administrators can set administrator permissions.
         it("Should set user1 as admin", async () => {
             const { admin, user1, StakingContract } = await loadFixture(deployFixture)
             await StakingContract.connect(admin).setAdmin(user1)
         })
-
+        //Cannot set administrator privileges if the caller is not an administrator.
         it("Should not set admin if caller is not admin", async () => {
             const { admin, user1, StakingContract } = await loadFixture(deployFixture)
             await expect(StakingContract.connect(user1).setAdmin(user1)).to.be.revertedWith("caller is not admin")
         })
 
+        //Check who the owner is
         it("Owner verification", async () => {
             const { admin, user1, StakingContract } = await loadFixture(deployFixture)
             const adminAddress = await StakingContract.connect(user1).admin()
@@ -54,7 +61,11 @@ describe("TokenFactory", function () {
         })
     })
 
+
+    //Token locking performance test
     describe("Token Locking Contract", async () => {
+
+        //After user1 deposits USDT, the tokens need to be locked in the smart contract
         it("Should Token Lock in smart contract with user1", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             const initAmount = 100000.0;
@@ -73,6 +84,7 @@ describe("TokenFactory", function () {
             const amountList = await StakingContract.connect(user1).getStakingTokenAmount()
         })
 
+        //Withdrawal is not possible within 3 months from the date user1 deposited USDT.
         it("Should not withdraw in 3 months with user1", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             const initAmount = 100000.0;
@@ -91,6 +103,7 @@ describe("TokenFactory", function () {
                 .to.be.revertedWith("Lock time not elapsed");
         })
 
+        //Withdrawal is possible within 3 months from the date user1 deposited USDT.
         it("Should withdraw after 3 month with user1", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             const initAmount = 100000.0;
@@ -106,7 +119,7 @@ describe("TokenFactory", function () {
 
             const threeMonthsInSeconds = 3 * 30 * 24 * 60 * 60; // Approximation
             await time.increase(threeMonthsInSeconds);
-            await StakingContract.connect(user1).WithDraw(1, USDT)
+            await StakingContract.connect(user1).WithDraw(1, USDT) // Withdraw usdt from smart contract
 
             const tokenList = await StakingContract.connect(user1).getStakingTokenList()
             const startTimeList = await StakingContract.connect(user1).getStakingTokenStartTime()
@@ -114,7 +127,7 @@ describe("TokenFactory", function () {
         })
 
 
-
+        //After user2 deposits USDT, the tokens need to be locked in the smart contract
         it("Should Token Lock in smart contract with user2", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             const initAmount = 100000.0;
@@ -133,6 +146,7 @@ describe("TokenFactory", function () {
             const amountList = await StakingContract.connect(user1).getStakingTokenAmount()
         })
 
+        //Withdrawal is not possible within 3 months from the date user2 deposited USDT.
         it("Should not withdraw in 3 months with user2", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             const initAmount = 100000.0;
@@ -151,6 +165,7 @@ describe("TokenFactory", function () {
                 .to.be.revertedWith("Lock time not elapsed");
         })
 
+        //Withdrawal is possible within 3 months from the date user2 deposited USDT.
         it("Should withdraw after 3 month with user2", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             const initAmount = 100000.0;
@@ -166,7 +181,7 @@ describe("TokenFactory", function () {
 
             const threeMonthsInSeconds = 3 * 30 * 24 * 60 * 60; // Approximation
             await time.increase(threeMonthsInSeconds);
-            await StakingContract.connect(user1).WithDraw(1, USDT)
+            await StakingContract.connect(user1).WithDraw(1, USDT) // Withdraw deposition index 1
 
             const tokenList = await StakingContract.connect(user1).getStakingTokenList()
             const startTimeList = await StakingContract.connect(user1).getStakingTokenStartTime()
@@ -175,7 +190,11 @@ describe("TokenFactory", function () {
 
     })
 
+
+    //Reward calculation Test
     describe("RewardDistribution Contract", async () => {
+
+        //Withdrawal is possible after 3 months with compensation for user1
         it("Should withdraw after 3 month with reward with user1", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             const initAmount = 100000.0;
@@ -193,12 +212,13 @@ describe("TokenFactory", function () {
 
             await time.increase(threeMonthsInSeconds);
             await StakingContract.connect(user1).WithDraw(1, USDT)
-            
+
             const tokenList = await StakingContract.connect(user1).getStakingTokenList()
             const startTimeList = await StakingContract.connect(user1).getStakingTokenStartTime()
             const amountList = await StakingContract.connect(user1).getStakingTokenAmount()
         })
 
+        //Withdrawal is impossible after 3 months with compensation for user1
         it("Should not withdraw in 3 months with Reward with user1", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             const initAmount = 100000.0;
@@ -217,6 +237,7 @@ describe("TokenFactory", function () {
                 .to.be.revertedWith("Lock time not elapsed");
         })
 
+        //Withdrawal is possible after 3 months with compensation for user2
         it("Should withdraw after 3 month with reward with user2", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             const initAmount = 100000.0;
@@ -234,12 +255,13 @@ describe("TokenFactory", function () {
 
             await time.increase(threeMonthsInSeconds);
             await StakingContract.connect(user1).WithDraw(1, USDT)
-            
+
             const tokenList = await StakingContract.connect(user1).getStakingTokenList()
             const startTimeList = await StakingContract.connect(user1).getStakingTokenStartTime()
             const amountList = await StakingContract.connect(user1).getStakingTokenAmount()
         })
 
+        //Withdrawal is impossible after 3 months with compensation for user2
         it("Should not withdraw in 3 months with Reward with user2", async () => {
             const { USDT, USDC, StakingContract, admin, user1 } = await loadFixture(deployFixture)
             const initAmount = 100000.0;
