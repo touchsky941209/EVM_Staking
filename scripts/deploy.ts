@@ -17,7 +17,7 @@ const Save_Deployment_History = async (chainId: any, deploymentsOutput: any) => 
 }
 
 const USDC_TOKEN_Deployment = async (chainId: any) => {
-    const USDC_TOKEN_Deployment_Transaction = await ethers.deployContract("Token", ["usdc_token", "USDC_TOKEN", 1000000000000, 18]);
+    const USDC_TOKEN_Deployment_Transaction = await ethers.deployContract("Token", ["USDT", "USDT", 6, 100_000_000_000]);
 
     const deploymentsOutput = {
         USDC_TOKEN: await USDC_TOKEN_Deployment_Transaction.getAddress()
@@ -28,7 +28,7 @@ const USDC_TOKEN_Deployment = async (chainId: any) => {
 }
 
 const WDAI_TOKEN_Deployment = async (chainId: any) => {
-    const USDC_TOKEN_Deployment_Transaction = await ethers.deployContract("Token", ["usdc_token", "USDC_TOKEN", 1000000000000, 18]);
+    const USDC_TOKEN_Deployment_Transaction = await ethers.deployContract("Token", ["usdt_token", "USDt_TOKEN", 1000000000000, 18]);
 
     const deploymentsOutput = {
         WDAI: await USDC_TOKEN_Deployment_Transaction.getAddress()
@@ -61,7 +61,7 @@ const EstokkYam_Contract_Deployment = async (chainId: any) => {
 }
 
 const TokenFactory_Contract_Deployment = async (chainId: any) => {
-    const TokenFactory = await ethers.deployContract("TokenFactory");
+    const TokenFactory = await ethers.deployContract("TokenFactory", []);
 
     const deploymentsOutput = {
         TokenFactory: await TokenFactory.getAddress()
@@ -71,6 +71,14 @@ const TokenFactory_Contract_Deployment = async (chainId: any) => {
     console.log("TokenFactory deployed to address:", await TokenFactory.getAddress());
 }
 
+const Staking_Conract_Deployment = async (chainId: any, signer: any) => {
+    const Staking_Contract = await ethers.deployContract("StakingContract", [signer])
+    const deploymentsOutput = {
+        StakingContract: await Staking_Contract.getAddress()
+    }
+    await Save_Deployment_History(chainId, deploymentsOutput)
+    console.log("StakingContract deployed to address:", await Staking_Contract.getAddress());
+}
 async function main() {
 
     if (!fs.existsSync("deployments")) {
@@ -88,11 +96,12 @@ async function main() {
     console.log("    Network =>", network)
     console.log("    ChainID =>", chainId)
 
-    await USDC_TOKEN_Deployment(chainId)
-    await WDAI_TOKEN_Deployment(chainId)
-    await BridgeT_Contract_Deployment(chainId)
-    await EstokkYam_Contract_Deployment(chainId)
-    await TokenFactory_Contract_Deployment(chainId)
+    // await USDC_TOKEN_Deployment(chainId)
+    await Staking_Conract_Deployment(chainId, deployer.address)
+    // await WDAI_TOKEN_Deployment(chainId)
+    // await BridgeT_Contract_Deployment(chainId)
+    // await EstokkYam_Contract_Deployment(chainId)
+    // await TokenFactory_Contract_Deployment(chainId)
 
 
     const afterBalance = Number(ethers.formatEther(await ethers.provider.getBalance(deployer)))
